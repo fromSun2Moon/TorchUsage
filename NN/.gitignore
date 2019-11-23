@@ -4,4 +4,4 @@
 *.pt
 *.xslx
 *.txt
-
+*.ipynb_checkpoints
