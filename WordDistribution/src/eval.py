@@ -9,6 +9,8 @@ import pandas as pd
 from numpy.linalg import norm
 #import matplotlib.pylab as plt
 
+import torch
+from src.model import NCEloss
 from scipy.stats import pearsonr, spearmanr
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import pairwise_distances
@@ -17,7 +19,28 @@ def custom_cosine_similarity(x, y)-> int:
     """ 1D tensor input """
     return x.dot(y) / (norm(x)* norm(y) + 1e-15) # l2 norm in paper
 
+def cosine_sim_men(men, model, word2idx):
+    rm_cnt=0
+    sim_lst=[]
+    sim_human=[]
+    for word1, word2, num in men:
+        w1 = word1.replace('-n','').replace('-j','').replace('-v','')
+        w2 = word2.replace('-n','').replace('-j','').replace('-v','')
+        try:
+            x = model.embedding_i.weight[word2idx[w1]]
+            y = model.embedding_i.weight[word2idx[w2]]
+            sim = custom_cosine_similarity(x.detach().numpy(), y.detach().numpy())
+            sim_lst.append(sim)
+            sim_human.append(float(num.replace("\n","")))
+        except Exception as e:
+            print(str(e))
+            rm_cnt+=1
+    print("Removed eval dataset count: ", rm_cnt)
+    return sim_lst, sim_human
+
+
 def cosine_sim_rg(rg65, model, word2idx):
+    rm_cnt=0
     sim_human = []
     sim_lst = []
     for i in range(len(rg65)):
@@ -28,7 +51,9 @@ def cosine_sim_rg(rg65, model, word2idx):
             sim_lst.append(sim)
             sim_human.append(float(rg65[i].split(';')[2].replace(' ','').replace('\n','')))
         except Exception as e:
+            rm_cnt+=1
             print(str(e))
+    print("Removed eval dataset count: ", rm_cnt)
     return sim_lst, sim_human
 
 def cosine_sim_sim393(sim393, model, word2idx):
@@ -49,6 +74,43 @@ def cosine_sim_sim393(sim393, model, word2idx):
     print("Removed eval dataset count: ", rm_cnt)
     return sim_lst, sim_human
 
+def cosine_sim_simrel(sim_rel, model, word2idx):
+    rm_cnt=0
+    sim_human = []
+    sim_lst = []
+
+    for lst in sim_rel:
+        line = lst.split('\t') 
+        try:
+            x = model.embedding_i.weight[word2idx[line[0]]]
+            y = model.embedding_i.weight[word2idx[line[1]]]
+            sim = custom_cosine_similarity(x.detach().numpy(), y.detach().numpy())
+            sim_lst.append(sim)
+            sim_human.append(float(line[2].replace("\n","")))
+        except Exception as e:
+            rm_cnt+=1
+    print("Removed eval dataset count: ", rm_cnt)
+    return sim_lst, sim_human
+
+def cosine_sim_simlex(simlex, model, word2idx):
+    rm_cnt=0
+    sim_lst=[]
+    sim_human=[]
+    for line in simlex:
+        line = line.split('\t')
+        try:
+            x = model.embedding_i.weight[word2idx[line[0]]]
+            y = model.embedding_i.weight[word2idx[line[1]]]
+            sim = custom_cosine_similarity(x.detach().numpy(), y.detach().numpy())
+            sim_lst.append(sim)
+            sim_human.append(line[3])
+        except Exception as e:
+            print(e)
+            rm_cnt+=1
+    print("Removed eval dataset count: ", rm_cnt)
+    return sim_lst, sim_human
+
+
 if __name__ == '__main__':
     
     SEED = 42 # predictable random variables
@@ -59,8 +121,11 @@ if __name__ == '__main__':
                             datefmt='%m/%d/%Y %H:%M:%S',
                             level=logging.INFO)
     logger =logging.getLogger(__name__)
-
-  
+    
+    # Model load
+    ##########################################
+    ##### Free available for Model format ####
+    ##########################################
     model_path = 'result_0810'
     name = 'skip_gram'
     hidden = 100
@@ -73,7 +138,6 @@ if __name__ == '__main__':
     
     vocab_size = len(vocab[0]) # 16.7M
 
-    double=False
     model = NCEloss(vocab_size, hidden)
     model.load_state_dict(torch.load(f'./{model_path}/{name}_{hidden}_{lr}_{key}.pt'))
     model.eval()

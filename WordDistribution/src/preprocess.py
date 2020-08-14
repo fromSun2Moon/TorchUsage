@@ -11,7 +11,15 @@ sys.path.append('./')
 from utils import preprocess, rm, get_vocab
 
 # global varialbes
-window_size = 2
+window_size = 5
+t = 1e-05
+SAVE_DIR = './result'
+
+if not os.path.exists(SAVE_DIR):
+    os.mkdir(SAVE_DIR)
+else:
+    pass
+
 
 def get_unigram_distribution(words):
     # unigram distribution
@@ -29,8 +37,8 @@ def get_over_threshold(frequency, t=1e-05):
 
 def get_features(data, frequency):
     global t
-    
-    t = 1e-05
+    global SAVE_DIR
+    global window_size
     features=[]
     for doc in tqdm(data):
         doc = doc.split(' ')
@@ -44,15 +52,15 @@ def get_features(data, frequency):
         
         for idx in range(len(doc)):
             word= doc[idx]
-            #  words whose frequency is greater than t while preserving the ranking of the frequencies
-            if frequency[word2idx[word]] > t:
+            if frequency[word2idx[word]] < t:
                 left = doc[max(idx-window_size,0):idx]
                 right = doc[idx+1:idx+(window_size+1)]
-                features.append([word]+['<unk>' for _ in range(window_size - len(left))]+left + right+ ['<unk>' for _ in range(window_size - len(right))])
+                #features.append([word]+['<unk>' for _ in range(window_size - len(left))]+left + right+ ['<unk>' for _ in range(window_size - len(right))])
+                features.append([word] + left + right)
             else:
                 pass
 
-    with open('../util/data0728.pkl', 'wb') as writer:
+    with open(os.path.join(SAVE_DIR,'data.pkl'), 'wb') as writer:
         pickle.dump(features,writer)
     logger.info("Data(words) saved....")
 
@@ -63,23 +71,25 @@ def get_features(data, frequency):
         except Exception as e:
             print("Error : ", e)
 
-    with open('../util/features0728.pkl', 'wb') as writer:
+    with open(os.path.join(SAVE_DIR,'featrues.pkl'), 'wb') as writer:
         pickle.dump(indices, writer)
-    logger.info("Features(index) saved....")
-    return features
+    logger.info("Features saved....")
+    return features, indices
+
+
 
 
 if __name__ == '__main__':
 
-    data_path = '../dataset/wrd/wikitext-2/wiki.train.tokens'
+    data_path = '../dataset/wrd/wikitext-2/wiki.train.tokens' # path for data
 
     # Logging
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                             datefmt='%m/%d/%Y %H:%M:%S',
                             level=logging.INFO)
     logger =logging.getLogger(__name__)
-        
-    # Wiki-2 dataset, 2 million tokens(After preprocess, 1.8 M)
+
+    # test module
     with open(data_path, 'r') as reader:
         raw_data = reader.readlines()
     
