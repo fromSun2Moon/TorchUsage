@@ -6,8 +6,11 @@ import time
 # from itertools import chain
 import numpy as np
 import pandas as pd
-from tqdm.auto import tqdm
-
+try:
+    from tqdm import tqdm
+except ModuleNotFoundError:
+    raise
+    print("[INFO] pip install tqdm")
 import torch 
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
@@ -19,7 +22,8 @@ from model import SkipConnectionModel
 from utils import get_cosine_with_hard_restarts_schedule_with_warmup
 
 # 지피유 및 CUDA 환경이 마련되어 있다면, 모델 학습을 위해 CUDA 환경을 직접 설정합니다.
-device = torch.device('cuda:0' if torch.cuda.is_available else 'cpu')
+# 그렇지 않은 경우, 자동으로 cpu를 설정하게 됩니다.
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # original data : train.csv => random으로 섞어 미리 train1 data를 만들고 evaluation을 위해서 val data를 따로 분리했습니다. (9:1)
 # 모델 학습 데이터 경로를 설정합니다.
@@ -43,10 +47,10 @@ warmup_step = config.WARMUP_STEPS
 
 # Loader를 통해 Batch 데이터로 반환합니다.
 train_dataset = PandasDataset(train_path)
-train_loader = DataLoader(train_dataset, batch_size=batch_size,  num_workers=4)
+train_loader = DataLoader(train_dataset, batch_size=batch_size,  num_workers=0)
 
 val_dataset = PandasDataset(val_path)
-val_loader = DataLoader(val_dataset, batch_size=batch_size,  num_workers=4) 
+val_loader = DataLoader(val_dataset, batch_size=batch_size,  num_workers=0) 
 
 total_step = len(train_loader) * epochs
 print(f"Total step is....{total_step}")
@@ -55,8 +59,9 @@ print(f"Total step is....{total_step}")
 ###### Model #########
 ###################### 
 # 모델을 호출합니다.
+# fn_in, fn_out, hidden_sizes
 model = SkipConnectionModel(226, 4, 300, 2000, 4000, 7000, 10000)  # channel은 변수로 관리가 가능합니다.
-model = model.to(device) # 모델을 GPU 메모리에 올립니다.
+model = model.to(device) # 모델을 GPU 메모리에 올립니다. # gpu가 없는 환경은 자동으로 cpu가 설정됩니다.
 
 ######################
 ###### Optim #########
