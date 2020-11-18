@@ -1,9 +1,8 @@
 import os
 import pandas as pd
 import torch
-import pandas as pd
-from model import *
-from utils import TestDataset
+from src.model import *
+from src.utils import TestDataset
 from torch.utils.data import DataLoader
 
 # 모델 평가 시 GPU를 사용하기 위해서 설정.
