@@ -1,5 +1,6 @@
 import os
 import torch
+import pandas as pd
 from model import *
 from utils import TestDataset
 from torch.utils.data import DataLoader
@@ -10,9 +11,9 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 # 테스트 데이터 위치
 path_test = 'data/test.csv'
 
-# pth 파일 리스트들
+# pth 파일들(모델 한개 예시)
 # 학습을 통해 저장된 pth 파일들을 가져옵니다.
-pth_bin = 'model.pth' # 학습해서 이미 모델이 저장되어 있어야합니다.
+pth_bin = 'bin/model.pth' # 학습해서 이미 모델이 저장되어 있어야합니다.
 
 # csv가 저장될 디렉토리를 미리 만들어 놓습니다.
 if not os.path.exists('test'):  # 'test' 는 USER에 맞게 지정하시면 됩니다.
@@ -46,7 +47,7 @@ layers = ['layer_1','layer_2','layer_3','layer_4']
 submission = sample_sub.values + pred_test.cpu().numpy()
 
 submission = pd.DataFrame(data=submission,columns=layers)
-submission.to_csv(f'{USER_BIN}.csv', index_label='id')
+submission.to_csv('./test/submission.csv', index_label='id')
 
 
 #######################################################################

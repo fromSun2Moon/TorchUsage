@@ -1,7 +1,40 @@
 # Dacon Semiproduct code
 
+
+```
+C:.
+│  .gitignore
+│  config.py
+│  README.md
+│  test.py
+│  train.py
+│
+├─bin
+├─data
+│      test.csv
+│      train.csv
+│      train1.csv
+│      val.csv
+│
+├─ipynb
+│      MAE.ipynb
+│      split_file.ipynb
+│
+├─src
+│      get_score.py
+│      model.py
+│      utils.py
+│
+└─__pycache__
+        config.cpython-37.pyc
+        model.cpython-37.pyc
+        utils.cpython-37.pyc
+```
+
 1. 먼저 데이콘에서 데이터를 다운로드 받아, data 디렉토리에 넣어줍니다.
 - https://dacon.io/competitions/official/235554/data/
+- train.csv, test.csv
+- sample_submission : 결과를 쓰기 위한 csv file.
 
 2. split_file.ipynb를 키고 한 행마다 실행하여 학습 데이터를 얻습니다.
 3. config.py에서 데이터 경로와 원하는 하이퍼 파라미터를 설정합니다.
@@ -30,13 +63,7 @@ pth file들로 모델 test를 진행해서 csv 를 쓰는 파일.
 train한 weights 파일(.pth/.bin/.pt)들이 존재하는 디렉토리.
 
 --------------------------------------------------------
-> 아래 파일들은 Dacon 홈페이지에서 다운 가능합니다.
 
-# test.csv
-test csv file
-
-# sample_submission
-result file을 쓰기 위한 frame file.
-
-# MAE.ipynb
+## MAE.ipynb
 test 정답 데이터가 없는 경우 모델 overfitting 점검.
+

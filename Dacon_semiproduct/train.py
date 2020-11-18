@@ -17,9 +17,8 @@ from torch.utils.data import Dataset, DataLoader
 from torch.optim import AdamW
 
 import config
-from utils import PandasDataset
-from model import SkipConnectionModel
-from utils import get_cosine_with_hard_restarts_schedule_with_warmup
+from src.model import SkipConnectionModel
+from src.utils import PandasDataset, get_cosine_with_hard_restarts_schedule_with_warmup
 
 # 지피유 및 CUDA 환경이 마련되어 있다면, 모델 학습을 위해 CUDA 환경을 직접 설정합니다.
 # 그렇지 않은 경우, 자동으로 cpu를 설정하게 됩니다.
