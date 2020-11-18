@@ -1,10 +1,11 @@
 import os
+import pandas as pd
 import torch
 from model import *
 from utils import TestDataset
 from torch.utils.data import DataLoader
 
-# 모델 평가 시, 지피유를 사용하기 위해서 설정.
+# 모델 평가 시 GPU를 사용하기 위해서 설정.
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # 테스트 데이터 위치
@@ -12,15 +13,11 @@ path_test = 'data/test.csv'
 
 # pth 파일 리스트들
 # 학습을 통해 저장된 pth 파일들을 가져옵니다.
-pth_bin = 'model.pth' # 학습해서 이미 모델이 저장되어 있어야합니다.
+pth_bin = 'bin/model.pth' # 학습해서 이미 모델이 저장되어 있어야합니다.
 
 # csv가 저장될 디렉토리를 미리 만들어 놓습니다.
 if not os.path.exists('test'):  # 'test' 는 USER에 맞게 지정하시면 됩니다.
     os.mkdir('test')
-
-# 테스트 데이터셋을 정의하고 부릅니다. 
-test_data = TestDataset(path_test)
-test_loader = DataLoader(test_data, batch_size=10000,  num_workers=4)
 
 ########################################
 ######### 모델 하나에 대한 테스트 ##########
@@ -29,10 +26,11 @@ test_loader = DataLoader(test_data, batch_size=10000,  num_workers=4)
 # Test Model
 # 모델을 테스트하기 위해서 모델을 다시 정의합니다.
 test_model = SkipConnectionModel(226, 4, 300,2000,4000,7000,10000)
+teest_model = test_model.to(device)
 
 # Test dataset을 불러옵니다.
 test_data = TestDataset(path_test)
-test_loader = DataLoader(test_data, batch_size=10000,  num_workers=4)
+test_loader = DataLoader(test_data, batch_size=10000,  num_workers=0)
 
 # 테스트 데이터를 불러와서 모델로 결과를 예측하고 그 결과를 파일로 씁니다.
 with torch.no_grad():
@@ -41,12 +39,12 @@ with torch.no_grad():
         outputs = test_model(data.float())
 pred_test = outputs
 
-sample_sub = pd.read_csv('sample_submission.csv', index_col=0)
+sample_sub = pd.read_csv('data/sample_submission.csv', index_col=0)
 layers = ['layer_1','layer_2','layer_3','layer_4']
 submission = sample_sub.values + pred_test.cpu().numpy()
 
 submission = pd.DataFrame(data=submission,columns=layers)
-submission.to_csv(f'{USER_BIN}.csv', index_label='id')
+submission.to_csv(f'./test/submission.csv', index_label='id')
 
 
 #######################################################################
