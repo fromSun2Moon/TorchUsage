@@ -62,8 +62,12 @@ pth file들로 모델 test를 진행해서 csv 를 쓰는 파일.
 ## bin
 train한 weights 파일(.pth/.bin/.pt)들이 존재하는 디렉토리.
 
---------------------------------------------------------
+## ipynb
+- eda.ipynb
+데이터를 통계 및 시각화 낸 파일.
 
-## MAE.ipynb
-test 정답 데이터가 없는 경우 모델 overfitting 점검.
+- MAE.ipynb
+test 정답 데이터가 없는 경우 모델 overfitting 점검 파일.
 
+- split_file.ipynb
+학습 데이터와 평가 데이터를 분리하는 파일.
