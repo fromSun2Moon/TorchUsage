@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import torch
-from src.model import *
+from src.model import SkipConnectionModel
 from src.utils import TestDataset
 from torch.utils.data import DataLoader
 
@@ -13,7 +13,7 @@ path_test = 'data/test.csv'
 
 # pth 파일들(모델 한개 예시)
 # 학습을 통해 저장된 pth 파일들을 가져옵니다.
-pth_bin = 'bin/model.pth' # 학습해서 이미 모델이 저장되어 있어야합니다.
+pth_bin = 'bin/test_43.pth' # 학습해서 이미 모델이 저장되어 있어야합니다.
 
 # csv가 저장될 디렉토리를 미리 만들어 놓습니다.
 if not os.path.exists('test'):  # 'test' 는 USER에 맞게 지정하시면 됩니다.
@@ -25,7 +25,7 @@ if not os.path.exists('test'):  # 'test' 는 USER에 맞게 지정하시면 됩�
 
 # Test Model
 # 모델을 테스트하기 위해서 모델을 다시 정의합니다.
-test_model = SkipConnectionModel(226, 4, 300,2000,4000,7000,10000)
+test_model = SkipConnectionModel(fn_in=226, fn_out=4)
 teest_model = test_model.to(device)
 
 # Test dataset을 불러옵니다.

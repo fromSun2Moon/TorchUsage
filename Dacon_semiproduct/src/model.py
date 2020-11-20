@@ -53,24 +53,24 @@ class SkipConnectionModel(nn.Module):
     >> model = Model(f_in, f_out, 300, 2000, 4000, 7000, 10000)
     300, 2000, 4000, 7000, 10000 : channels
     """
-    def __init__(self, fn_in, fn_out, *args):        
+    def __init__(self, fn_in=226, fn_out=4, *args):        
         super(SkipConnectionModel, self).__init__()
-        self.ln = LayerNorm(args[4]) #10000
-        self.ln1 = LayerNorm(args[3]) # 7000
-        self.ln2 = LayerNorm(args[2]) # 4000
-        self.ln3 = LayerNorm(args[1]) # 2000
+        self.ln = LayerNorm(10000) #10000
+        self.ln1 = LayerNorm(7000) # 7000
+        self.ln2 = LayerNorm(4000) # 4000
+        self.ln3 = LayerNorm(2000) # 2000
         
-        self.upblock1 = nn.Sequential(nn.Linear(fn_in, args[1]),GELU(),nn.BatchNorm1d(args[1])) # 2000
-        self.upblock2 = nn.Sequential(nn.Linear(args[1],args[2]),GELU(),nn.BatchNorm1d(args[2])) # 4000
-        self.upblock3 = nn.Sequential(nn.Linear(args[2],args[3]), GELU(),nn.BatchNorm1d(args[3])) # 7000
-        self.upblock4 = nn.Sequential(nn.Linear(args[3],args[4]),GELU(),nn.BatchNorm1d(args[4])) # 10000
+        self.upblock1 = nn.Sequential(nn.Linear(fn_in, 2000),GELU(),nn.BatchNorm1d(2000)) # 2000
+        self.upblock2 = nn.Sequential(nn.Linear(2000,4000),GELU(),nn.BatchNorm1d(4000)) # 4000
+        self.upblock3 = nn.Sequential(nn.Linear(4000,7000), GELU(),nn.BatchNorm1d(7000)) # 7000
+        self.upblock4 = nn.Sequential(nn.Linear(7000,10000),GELU(),nn.BatchNorm1d(10000)) # 10000
 
-        self.downblock1 = nn.Sequential(nn.Linear(args[4], args[3]),GELU(),nn.BatchNorm1d(args[3])) #7000
-        self.downblock2 = nn.Sequential(nn.Linear(args[3], args[2]),GELU(),nn.BatchNorm1d(args[2])) # 4000
-        self.downblock3 = nn.Sequential(nn.Linear(args[2], args[1]),GELU(),nn.BatchNorm1d(args[1])) # 2000
-        self.downblock4 = nn.Sequential(nn.Linear(args[1], args[0]),GELU(),nn.BatchNorm1d(args[0])) # 10000
+        self.downblock1 = nn.Sequential(nn.Linear(10000, 7000),GELU(),nn.BatchNorm1d(7000)) #7000
+        self.downblock2 = nn.Sequential(nn.Linear(7000, 4000),GELU(),nn.BatchNorm1d(4000)) # 4000
+        self.downblock3 = nn.Sequential(nn.Linear(4000, 2000),GELU(),nn.BatchNorm1d(2000)) # 2000
+        self.downblock4 = nn.Sequential(nn.Linear(2000, 300),GELU(),nn.BatchNorm1d(300)) # 10000
         
-        self.fclayer = nn.Sequential(nn.Linear(args[0], fn_out))
+        self.fclayer = nn.Sequential(nn.Linear(300, fn_out))
         self.dropout = nn.Dropout(0.1)
         
     def forward(self, x):
@@ -79,7 +79,7 @@ class SkipConnectionModel(nn.Module):
         upblock3_out = self.upblock3(upblock2_out)
         upblock4_out = self.upblock4(upblock3_out)
         
-        downblock1_out = self.downblock1(self.ln(upblock4_out))
+        downblock1_out = self.downblock1(self.ln(upblock4_out)) # 계층 정규화 적용.
         skipblock1 = downblock1_out + upblock3_out
         downblock2_out = self.downblock2(self.ln1(skipblock1))
         skipblock2 = downblock2_out + upblock2_out

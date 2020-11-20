@@ -59,7 +59,7 @@ print(f"Total step is....{total_step}")
 ###################### 
 # 모델을 호출합니다.
 # fn_in, fn_out, hidden_sizes
-model = SkipConnectionModel(226, 4, 300, 2000, 4000, 7000, 10000)  # channel은 변수로 관리가 가능합니다.
+model = SkipConnectionModel(fn_in=226, fn_out=4)  # channel은 모델에서 수정합니다.
 model = model.to(device) # 모델을 GPU 메모리에 올립니다. # gpu가 없는 환경은 자동으로 cpu가 설정됩니다.
 
 ######################
@@ -137,6 +137,6 @@ for epoch in range(epochs):
     # best model을 저장합니다.
     if val_loss < n_val_loss:
         n_val_loss = val_loss
-        torch.save(model.state_dict(), f'test_{version}_{lr}_{epochs}.pth')
+        torch.save(model.state_dict(), f'test_{version}.pth')
         print("Best Model saved......")
         
